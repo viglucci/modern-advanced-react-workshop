@@ -2,32 +2,38 @@ import React from "react";
 import createMediaListener from "./lib/createMediaListener";
 import { Galaxy, Trees, Earth } from "./lib/screens";
 
-const media = createMediaListener({
-  big: "(min-width : 1000px)",
-  tiny: "(max-width: 600px)"
-});
+const withMedia = (options) => {
+  const mediaListener = createMediaListener(options);
+  return (WrappedComponent) => {
+    return class extends React.Component {
+      state = {
+        media: mediaListener.getState()
+      };
+    
+      componentDidMount() {
+        mediaListener.listen(media => this.setState({ media }));
+      }
+    
+      componentWillUnmount() {
+        mediaListener.dispose();
+      }
+  
+      render () {
+        const { media } = this.state;
+        return <WrappedComponent {...media} />;
+      }
+    }
+  };
+};
 
 class App extends React.Component {
-  state = {
-    media: media.getState()
-  };
-
-  componentDidMount() {
-    media.listen(media => this.setState({ media }));
-  }
-
-  componentWillUnmount() {
-    media.dispose();
-  }
-
   render() {
-    const { media } = this.state;
-
+    const { big, tiny } = this.props;
     return (
       <div>
-        {media.big ? (
+        {big ? (
           <Galaxy key="galaxy" />
-        ) : media.tiny ? (
+        ) : tiny ? (
           <Trees key="trees" />
         ) : (
           <Earth key="earth" />
@@ -37,4 +43,9 @@ class App extends React.Component {
   }
 }
 
-export default App;
+const mediaAwareApp = withMedia({
+  big: "(min-width : 1000px)",
+  tiny: "(max-width: 600px)"
+})(App);
+
+export default mediaAwareApp;

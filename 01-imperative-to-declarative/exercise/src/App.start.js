@@ -18,6 +18,35 @@ Tips:
 
 import React, { Component } from "react";
 
+/**
+ * BAD! Render should NOT have side effects!
+ */
+// const FuncDocumentTitle = ({ title }) => {
+//   document.title = title;
+//   return (
+//     null    
+//   );
+// };
+
+class DocumentTitle extends React.Component {
+
+  syncTitle = () => {
+    document.title = this.props.title;
+  };
+
+  componentDidMount() {
+    this.syncTitle();
+  }
+
+  componentWillUpdate() {
+    this.syncTitle();
+  }
+
+  render () {
+    return null;
+  }
+}
+
 class App extends Component {
   state = {
     completed: 0,
@@ -30,6 +59,8 @@ class App extends Component {
 
     return (
       <div className="app">
+        {/* <FuncDocumentTitle title={`Todos (${incomplete})`} /> */}
+        <DocumentTitle title={`Todos (${incomplete})`} />
         <h1>Todos ({incomplete})</h1>
 
         <form
