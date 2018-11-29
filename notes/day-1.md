@@ -12,3 +12,7 @@ If a component just has side effects, you can just render null and only rely on 
 
 * Do one thing and do it well (small sharp tools).
 * Have a shared interface.
+
+### Hooks
+
+React Today and Tommorrow and 90% Cleaner React with Hooks
