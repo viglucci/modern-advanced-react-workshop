@@ -24,6 +24,20 @@ import FaPause from "react-icons/lib/fa/pause";
 import FaForward from "react-icons/lib/fa/forward";
 import FaBackward from "react-icons/lib/fa/backward";
 
+const findNextValue = (children, currentValue) => {
+  let childrenArray = React.Children.toArray(children);
+  let currentIndex = childrenArray.findIndex(child => child.props.value === currentValue);
+  if (currentIndex === childrenArray.length - 1) { currentIndex = -1; }
+  return childrenArray[currentIndex + 1].props.value;
+};
+
+const findPrevValue = (children, currentValue) => {
+  let childrenArray = React.Children.toArray(children);
+  let currentIndex = childrenArray.findIndex(child => child.props.value === currentValue);
+  if (currentIndex === 0) { currentIndex = childrenArray.length; }
+  return childrenArray[currentIndex - 1].props.value;
+};
+
 class RadioGroup extends Component {
   state = {
     value: this.props.defaultValue
@@ -37,7 +51,21 @@ class RadioGroup extends Component {
       });
     });
     return (
-      <fieldset className="radio-group">
+      <fieldset
+        className="radio-group"
+        role="radiogroup"
+        onKeyDown={(event) => {
+          if (event.key === "ArrowRight") {
+            this.setState({
+              value: findNextValue(this.props.children, this.state.value)
+            });
+          } else if (event.key === "ArrowLeft") {
+            this.setState({
+              value: findPrevValue(this.props.children, this.state.value)
+            });
+          }
+        }}
+      >
         <legend>{this.props.legend}</legend>
         {children}
       </fieldset>
@@ -46,35 +74,50 @@ class RadioGroup extends Component {
 }
 
 class RadioButton extends Component {
+  buttonRef = React.createRef();
+  componentDidUpdate(prevProps) {
+    if (!prevProps.isActive && this.props.isActive) {
+      this.buttonRef.current.focus();
+    }
+  }
   render() {
     const { isActive, onSelect } = this.props;
     const className = "radio-button " + (isActive ? "active" : "");
     return (
-      <span className={className} onClick={onSelect}>
+      <button className={className} onClick={onSelect} tabIndex={(isActive) ? 0 : -1} ref={this.buttonRef}>
         {this.props.children}
-      </span>
+      </button>
     );
   }
 }
+
+const Group = () => {
+  return (
+    <div>
+      <RadioGroup defaultValue="pause" legend="Radio Group">
+        <RadioButton value="back">
+          <FaBackward />
+        </RadioButton>
+        <RadioButton value="play">
+          <FaPlay />
+        </RadioButton>
+        <RadioButton value="pause">
+          <FaPause />
+        </RadioButton>
+        <RadioButton value="forward">
+          <FaForward />
+        </RadioButton>
+      </RadioGroup>
+    </div>
+  );
+};
 
 class App extends Component {
   render() {
     return (
       <div>
-        <RadioGroup defaultValue="pause" legend="Radio Group">
-          <RadioButton value="back">
-            <FaBackward />
-          </RadioButton>
-          <RadioButton value="play">
-            <FaPlay />
-          </RadioButton>
-          <RadioButton value="pause">
-            <FaPause />
-          </RadioButton>
-          <RadioButton value="forward">
-            <FaForward />
-          </RadioButton>
-        </RadioGroup>
+        <Group></Group>
+        <Group></Group>
       </div>
     );
   }
