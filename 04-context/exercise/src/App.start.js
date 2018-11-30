@@ -51,18 +51,81 @@ import FaPlay from "react-icons/lib/fa/play";
 import FaRepeat from "react-icons/lib/fa/repeat";
 import FaRotateLeft from "react-icons/lib/fa/rotate-left";
 
+const PlayerContext = React.createContext();
+
 class AudioPlayer extends React.Component {
+  state = {
+    playerReady: false,
+    isPlaying: false,
+    duration: 0,
+    currentTime: 0,
+    progress: 0,
+    toggleIsPlaying: () => {
+      this.toggleIsPlaying();
+    },
+    jumpForward: () => {
+      this.jumpForward();
+    },
+    jumpBack: () => {
+      this.jumpBack();
+    },
+    onProgressClick: () => this.onProgressClick
+  };
+  toggleIsPlaying() {
+    const nextState = !this.state.isPlaying;
+    if (nextState) {
+      this.audio.play();
+    } else {
+      this.audio.pause();
+    }
+    this.setState({
+      isPlaying: nextState
+    });
+  }
+  jumpBack() {
+    this.audio.currentTime = this.audio.currentTime - 10;
+  }
+  jumpForward() {
+    this.audio.currentTime = this.audio.currentTime + 10;
+  }
+  onPlayerReady() {
+    this.setState({
+      playerReady: true,
+      duration: this.audio.duration
+    });
+  }
+  onTimeUpdate() {
+    const currentTime = this.audio.currentTime;
+    this.setState({
+      currentTime,
+      progress: (currentTime / this.state.duration) * 100
+    });
+  }
+  onProgressClick(event) {
+    /**
+      event.clientX // left position *from window* of mouse click
+      let rect = node.getBoundingClientRect()
+      rect.left // left position *of node from window*
+      rect.width // width of node
+     */
+  }
   render() {
     return (
       <div className="audio-player">
-        <audio
-          src={this.props.source}
-          onTimeUpdate={null}
-          onLoadedData={null}
-          onEnded={null}
-          ref={n => (this.audio = n)}
-        />
-        {this.props.children}
+        <PlayerContext.Provider value={this.state}>
+          <audio
+            src={this.props.source}
+            onTimeUpdate={() => {
+              this.onTimeUpdate();
+            }}
+            onLoadedData={() => {
+              this.onPlayerReady();
+            }}
+            onEnded={null}
+            ref={n => (this.audio = n)}
+          />
+          {this.props.children}
+        </PlayerContext.Provider>
       </div>
     );
   }
@@ -71,14 +134,25 @@ class AudioPlayer extends React.Component {
 class Play extends React.Component {
   render() {
     return (
-      <button
-        className="icon-button"
-        onClick={null}
-        disabled={null}
-        title="play"
-      >
-        <FaPlay />
-      </button>
+      <PlayerContext.Consumer>
+        {({
+          isPlaying,
+          toggleIsPlaying
+        }) => {
+          return (
+            <button
+              className="icon-button"
+              onClick={() => {
+                toggleIsPlaying();
+              }}
+              disabled={isPlaying ? true : false}
+              title="play"
+            >
+              <FaPlay />
+            </button>
+          );
+        }}
+      </PlayerContext.Consumer>
     );
   }
 }
@@ -86,65 +160,114 @@ class Play extends React.Component {
 class Pause extends React.Component {
   render() {
     return (
-      <button
-        className="icon-button"
-        onClick={null}
-        disabled={null}
-        title="pause"
-      >
-        <FaPause />
-      </button>
+      <PlayerContext.Consumer>
+        {({
+          isPlaying,
+          toggleIsPlaying
+        }) => {
+          return (
+            <button
+              className="icon-button"
+              onClick={() => {
+                toggleIsPlaying();
+              }}
+              disabled={isPlaying ? false : true}
+              title="pause"
+            >
+              <FaPause />
+            </button>
+          );
+        }}
+      </PlayerContext.Consumer>
     );
   }
 }
 
 class PlayPause extends React.Component {
   render() {
-    return null;
+    return (
+      <PlayerContext.Consumer>
+        {({
+          isPlaying
+        }) => {
+          return (
+            (isPlaying) ? <Pause /> : <Play />
+          )
+        }}
+      </PlayerContext.Consumer>
+    )
   }
 }
 
 class JumpForward extends React.Component {
   render() {
     return (
-      <button
-        className="icon-button"
-        onClick={null}
-        disabled={null}
-        title="Forward 10 Seconds"
-      >
-        <FaRepeat />
-      </button>
-    );
+      <PlayerContext.Consumer>
+        {({
+          jumpForward
+        }) => {
+          return (
+            <button
+              className="icon-button"
+              onClick={() => {
+                jumpForward();
+              }}
+              disabled={null}
+              title="Forward 10 Seconds"
+            >
+              <FaRepeat />
+            </button>
+          );
+        }}
+      </PlayerContext.Consumer>
+    )
   }
 }
 
 class JumpBack extends React.Component {
   render() {
     return (
-      <button
-        className="icon-button"
-        onClick={null}
-        disabled={null}
-        title="Back 10 Seconds"
-      >
-        <FaRotateLeft />
-      </button>
-    );
+      <PlayerContext.Consumer>
+        {({
+          jumpBack
+        }) => {
+          return (
+            <button
+              className="icon-button"
+              onClick={() => {
+                jumpBack();
+              }}
+              disabled={null}
+              title="Back 10 Seconds"
+            >
+              <FaRotateLeft />
+            </button>
+          );
+        }}
+      </PlayerContext.Consumer>
+    )
   }
 }
 
 class Progress extends React.Component {
   render() {
     return (
-      <div className="progress" onClick={null}>
-        <div
-          className="progress-bar"
-          style={{
-            width: "23%"
-          }}
-        />
-      </div>
+      <PlayerContext.Consumer>
+        {({
+          progress
+        }) => {
+          return (
+            <div className="progress" onClick={null}>
+              <div
+                className="progress-bar"
+                style={{
+                  width: `${progress}%`
+                }}
+              />
+            </div>
+          );
+        }}
+      </PlayerContext.Consumer>
     );
   }
 }
