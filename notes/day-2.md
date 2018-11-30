@@ -19,3 +19,7 @@ tabIndex="-1" allows non interactable elements to gain focus programatically
 * Use aria attributes
 
 aria-haspopup to indicate that a button will cause a popup, such as the showing of select menu options.
+
+### Concurrent React
+
+gsbu - get snapshot before update
