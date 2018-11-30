@@ -73,6 +73,9 @@ class AudioPlayer extends React.Component {
   };
   toggleIsPlaying() {
     const nextState = !this.state.isPlaying;
+    /**
+     * TODO: moveplay and pause calls to lifecycle method
+     */
     if (nextState) {
       this.audio.play();
     } else {
@@ -108,6 +111,17 @@ class AudioPlayer extends React.Component {
       rect.left // left position *of node from window*
       rect.width // width of node
      */
+  }
+  componentDidUpdate(prevProps, prevState) {
+    /**
+     * TODO: audio element should be played and paused from this lifecycle so
+     * that the component is a 'fn of state'
+     */
+    // if (!prevProps.isPlaying && !prevState.isPlaying) {
+    //   this.audio.play();
+    // } else if (prevProps.isPlaying && prevState.isPlaying) {
+    //   this.audio.pause();
+    // }
   }
   render() {
     return (
